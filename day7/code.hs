@@ -1,0 +1,58 @@
+import Data.Ord
+import Data.List
+import Data.List.Split
+
+data Disc = Disc {
+    name    :: String,
+    weight  :: Int,
+    onTopOf :: [String]
+} deriving Show
+
+parseLine :: String -> Disc
+parseLine line = let name    = takeWhile (/= ' ') line
+                     weight  = read $ takeWhile (/= ')') $ drop 1 $ dropWhile (/= '(') line
+                     onTopOf = splitOn ", " $ drop 2 $ dropWhile (/= '>') line
+                 in Disc name weight onTopOf
+
+-- Part 1
+
+getBaseName :: [Disc] -> String
+getBaseName discs = go discs (discs >>= onTopOf) where
+    go [] _ = ""
+    go (x:xs) ys
+        | name x `elem` ys = go xs ys
+        | otherwise        = name x
+
+-- Part 2
+
+getDiscByName :: [Disc] -> String -> Disc
+getDiscByName discs x = head $ filter (\y -> x == name y) discs
+
+allTheSame :: (Eq a) => [a] -> Bool
+allTheSame xs = and $ map (== head xs) (tail xs)
+
+rep :: Ord a => [a] -> a
+rep = head . head . sortBy (flip $ comparing length) . group . sort
+
+correctWeight :: [Disc] -> Disc -> Int
+correctWeight discs x
+    | onTopOf x == [""] = 0
+    | otherwise         = let ds = getDiscByName discs <$> onTopOf x
+                              weights = getWeight <$> ds
+                          in if not $ allTheSame weights
+                             then let a       = rep weights
+                                      (w, dw) = head . filter ((/= a) . fst) $ zip weights (weight <$> ds)
+                                  in if w > a
+                                     then dw + (a - w)
+                                     else dw - (a - w)
+                             else 0 where
+        getWeight (Disc _ w [""]) = w
+        getWeight (Disc _ w o)    = (+) w $ sum $ getWeight <$> getDiscByName discs <$> o
+
+main = do
+    input <- readFile "input.txt"
+
+    let discs = parseLine <$> lines input
+
+    print $ getBaseName discs
+    print $ head . filter (/= 0) $ correctWeight discs <$> discs
