@@ -14,16 +14,12 @@ parseLine line = let name    = takeWhile (/= ' ') line
                      onTopOf = splitOn ", " $ drop 2 $ dropWhile (/= '>') line
                  in Disc name weight onTopOf
 
--- Part 1
-
 getBaseName :: [Disc] -> String
 getBaseName discs = go discs (discs >>= onTopOf) where
     go [] _ = ""
     go (x:xs) ys
         | name x `elem` ys = go xs ys
         | otherwise        = name x
-
--- Part 2
 
 getDiscByName :: [Disc] -> String -> Disc
 getDiscByName discs x = head $ filter (\y -> x == name y) discs
@@ -49,10 +45,20 @@ correctWeight discs x
         getWeight (Disc _ w [""]) = w
         getWeight (Disc _ w o)    = (+) w $ sum $ getWeight <$> getDiscByName discs <$> o
 
+part1 :: String -> String
+part1 =   getBaseName
+        . map parseLine
+        . lines
+
+part2 :: String -> Int
+part2 input = let discs = map parseLine . lines $ input
+              in head
+               . filter (/= 0)
+               . map (correctWeight discs)
+               $ discs
+
 main = do
     input <- readFile "input.txt"
 
-    let discs = parseLine <$> lines input
-
-    print $ getBaseName discs
-    print $ head . filter (/= 0) $ correctWeight discs <$> discs
+    print $ part1 input
+    print $ part2 input

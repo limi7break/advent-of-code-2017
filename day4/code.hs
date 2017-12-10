@@ -5,14 +5,23 @@ allUnique x = counts == uniques where
     counts = length x
     uniques = length $ map head . group . sort $ x
 
+part1 :: String -> Int
+part1 =   sum
+        . map fromEnum
+        . map allUnique
+        . map words
+        . lines
+
+part2 :: String -> Int
+part2 =   sum
+        . map fromEnum
+        . map allUnique
+        . (map . map) sort
+        . map words
+        . lines
+
 main = do
     input <- readFile "input.txt"
 
-    let parsed = words <$> lines input
-
-    let part1 = sum $ fromEnum <$> allUnique <$> parsed
-
-    let part2 = sum $ fromEnum <$> allUnique <$> (map . map) sort parsed
-
-    print $ part1
-    print $ part2
+    print $ part1 input
+    print $ part2 input

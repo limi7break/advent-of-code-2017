@@ -22,12 +22,22 @@ realloc xs = go 1 [xs] where
                                     then (cycles, nextState)
                                     else go (cycles+1) $ nextState : history
 
+part1 :: String -> Int
+part1 =   fst
+        . realloc
+        . map read
+        . words
+
+part2 :: String -> Int
+part2 =   fst
+        . realloc
+        . snd
+        . realloc
+        . map read
+        . words
+
 main = do
     input <- readFile "input.txt"
 
-    let parsed = (read :: String -> Int) <$> words input
-
-    let (cycles, state) = realloc parsed
-
-    print $ cycles
-    print $ fst $ realloc state
+    print $ part1 input
+    print $ part2 input
